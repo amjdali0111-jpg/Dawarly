@@ -1,0 +1,33 @@
+# Local Supabase stack (supabase start). Production settings are configured in
+# the Supabase dashboard — see README "Supabase setup".
+project_id = "dawarly"
+
+[api]
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/confirm"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+# Accounts are not active until the email address is confirmed.
+enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "Confirm your Dawarly account"
+content_path = "./supabase/templates/confirm.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Dawarly password"
+content_path = "./supabase/templates/recovery.html"

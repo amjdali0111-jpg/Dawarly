@@ -882,6 +882,24 @@ begin
   perform public._audit(c.university_id, 'security.joined_conversation', 'conversation', c.id::text);
 end $$;
 
+-- Conversations about a security case, listed for the university's security
+-- staff so they can choose to join (joining is audited). Metadata only.
+create or replace function public.security_case_conversations(p_report uuid)
+returns table (conversation_id uuid, created_at timestamptz, last_message_at timestamptz, joined boolean)
+language plpgsql stable security definer set search_path = '' as $$
+declare r public.reports;
+begin
+  select * into r from public.reports where id = p_report;
+  if not found or not public.is_security_staff(r.university_id) then raise exception 'auth:forbidden' using errcode = '42501'; end if;
+  if not r.is_sensitive and not exists (select 1 from public.recovery_requests rr where rr.report_id = r.id and rr.handover_method = 'security') then
+    return;
+  end if;
+  return query
+    select c.id, c.created_at, c.last_message_at,
+           exists (select 1 from public.conversation_participants cp where cp.conversation_id = c.id and cp.user_id = auth.uid())
+    from public.conversations c where c.report_id = r.id order by c.last_message_at desc;
+end $$;
+
 create or replace function public._on_message() returns trigger
 language plpgsql security definer set search_path = '' as $$
 declare p record;
@@ -1228,6 +1246,26 @@ returns void language sql security definer set search_path = '' as $$
    where id = p_id and email_status = 'sending';
 $$;
 
+-- Audit configuration changes made through RLS-guarded table writes.
+create or replace function public._audit_config_change() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  insert into public.audit_events (university_id, actor_id, action, target_type, target_id, metadata)
+  values (
+    case when tg_table_name = 'universities' then new.id else (to_jsonb(new)->>'university_id')::uuid end,
+    auth.uid(),
+    tg_table_name || '.' || lower(tg_op),
+    tg_table_name,
+    new.id::text,
+    jsonb_build_object('name_en', new.name_en, 'is_active', new.is_active)
+  );
+  return new;
+end $$;
+create trigger universities_audit after insert or update on public.universities
+  for each row execute function public._audit_config_change();
+create trigger categories_audit after insert or update on public.categories
+  for each row execute function public._audit_config_change();
+
 -- ---------------------------------------------------------------------------
 -- Function privileges: deny by default, then allow the client API surface.
 -- ---------------------------------------------------------------------------
@@ -1244,7 +1282,7 @@ grant execute on function
   public.security_review_request(uuid, boolean, text), public.withdraw_recovery_request(uuid),
   public.confirm_handover(uuid), public.report_handover_failed(uuid, text), public.open_dispute(uuid, text),
   public.admin_resolve_dispute(uuid, text, text),
-  public.start_conversation(uuid), public.security_join_conversation(uuid),
+  public.start_conversation(uuid), public.security_join_conversation(uuid), public.security_case_conversations(uuid),
   public.submit_rating(uuid, int, text), public.user_rating_summary(uuid),
   public.submit_abuse_report(public.abuse_target, uuid, text, text), public.admin_resolve_abuse(uuid, text, text, boolean),
   public.admin_set_role(uuid, public.app_role), public.admin_restrict_user(uuid, int, text), public.admin_lift_restriction(uuid),
