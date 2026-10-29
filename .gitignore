@@ -134,3 +134,15 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Next.js / project
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.env.local
+.env*.local
+playwright-report/
+test-results/
+.vercel
+.pgtest/
