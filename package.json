@@ -9,11 +9,10 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "npm run test:unit && npm run test:db",
     "test:unit": "vitest run tests/unit",
-    "test:db": "vitest run tests/db",
+    "test:db": "bash scripts/test-db.sh && vitest run tests/db",
     "test:e2e": "playwright test",
-    "db:test:setup": "bash scripts/test-db.sh",
     "bootstrap:admin": "node --experimental-strip-types scripts/bootstrap-admin.ts",
     "icons": "node scripts/generate-icons.mjs"
   },

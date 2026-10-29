@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 import { getT } from "@/i18n/server";
-import { publicEnv } from "@/lib/env";
+import { isSupabaseConfigured, publicEnv } from "@/lib/env";
 import { passwordSchema, registerSchema, safeNext } from "@/lib/validation";
 import { failKey, okKey, str } from "@/lib/actions";
 import type { ActionResult } from "@/lib/errors";
@@ -13,6 +13,7 @@ export async function setLocale(locale: string) {
   if (!isLocale(locale)) return;
   (await cookies()).set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   // Persist the preference for email language when signed in (RLS: own row only).
+  if (!isSupabaseConfigured()) return;
   const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (user) await supabase.from("profile_private").update({ locale }).eq("id", user.id);
