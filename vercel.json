@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/expire", "schedule": "17 3 * * *" },
+    { "path": "/api/cron/notifications", "schedule": "27 3 * * *" },
+    { "path": "/api/cron/matching", "schedule": "37 3 * * *" }
+  ]
+}
