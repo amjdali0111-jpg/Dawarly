@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  background: #0a1c2a;
+  color: #e6f4f6;
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .card { @apply rounded-2xl border border-white/5 bg-night-800/90 p-4 shadow-lg shadow-black/20 sm:p-5; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-teal-400 text-night-950 hover:bg-teal-300; }
+  .btn-amber { @apply btn bg-amber-400 text-night-950 hover:bg-amber-300; }
+  .btn-ghost { @apply btn border border-white/10 bg-white/5 text-slate-100 hover:bg-white/10; }
+  .btn-danger { @apply btn bg-danger-500 text-white hover:bg-danger-400; }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .input { @apply w-full rounded-xl border border-white/10 bg-night-900 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400; }
+  .label { @apply mb-1.5 block text-sm font-medium text-slate-300; }
+  .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+  .badge-lost { @apply badge bg-danger-500/90 text-white; }
+  .badge-found { @apply badge bg-teal-400 text-night-950; }
+  .badge-muted { @apply badge bg-white/10 text-slate-200; }
+  .badge-amber { @apply badge bg-amber-400/90 text-night-950; }
+  .page-title { @apply text-2xl font-bold text-white sm:text-3xl; }
+  .muted { @apply text-sm text-slate-400; }
+  .alert { @apply rounded-xl border px-4 py-3 text-sm; }
+  .alert-info { @apply alert border-teal-400/30 bg-teal-400/10 text-teal-100; }
+  .alert-warn { @apply alert border-amber-400/30 bg-amber-400/10 text-amber-100; }
+  .alert-error { @apply alert border-danger-400/40 bg-danger-500/10 text-red-100; }
+  .link { @apply text-teal-300 underline-offset-4 hover:underline; }
+}
+
+.leaflet-container { background: #0f2738; border-radius: 1rem; font-family: inherit; }
+.leaflet-control-attribution { font-size: 10px; }
