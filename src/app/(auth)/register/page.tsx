@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
@@ -6,7 +5,9 @@ import { getServerSupabase } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { RegisterForm } from "./RegisterForm";
 
-export const metadata: Metadata = { title: "Register" };
+export const metadata: Metadata = {
+  title: "Register",
+};
 
 export default async function RegisterPage() {
   const { t } = await getT();
@@ -28,20 +29,15 @@ export default async function RegisterPage() {
         .order("name_en");
 
       if (error) {
-        console.error("[RegisterPage] Universities query failed:", {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint,
-        });
+        console.error("[RegisterPage] Universities query failed:", error);
       } else {
         universities = data ?? [];
         console.log(
           `[RegisterPage] Universities loaded: ${universities.length}`
         );
       }
-    } catch (err) {
-      console.error("[RegisterPage] Unexpected error:", err);
+    } catch (error) {
+      console.error("[RegisterPage] Unexpected error:", error);
     }
   } else {
     console.error("[RegisterPage] Supabase is not configured");
