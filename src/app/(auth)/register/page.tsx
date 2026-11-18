@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
@@ -9,20 +10,66 @@ export const metadata: Metadata = { title: "Register" };
 
 export default async function RegisterPage() {
   const { t } = await getT();
-  let universities: { id: string; name_en: string; name_ar: string }[] = [];
+
+  let universities: {
+    id: string;
+    name_en: string;
+    name_ar: string;
+  }[] = [];
+
   if (isSupabaseConfigured()) {
-    const supabase = await getServerSupabase();
-    const { data } = await supabase.from("universities").select("id, name_en, name_ar").eq("is_active", true).order("name_en");
-    universities = data ?? [];
+    try {
+      const supabase = await getServerSupabase();
+
+      const { data, error } = await supabase
+        .from("universities")
+        .select("id, name_en, name_ar")
+        .eq("is_active", true)
+        .order("name_en");
+
+      if (error) {
+        console.error("[RegisterPage] Universities query failed:", {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+        });
+      } else {
+        universities = data ?? [];
+        console.log(
+          `[RegisterPage] Universities loaded: ${universities.length}`
+        );
+      }
+    } catch (err) {
+      console.error("[RegisterPage] Unexpected error:", err);
+    }
+  } else {
+    console.error("[RegisterPage] Supabase is not configured");
   }
+
   return (
     <div className="card p-6">
-      <h1 className="text-center text-2xl font-bold text-white">{t("auth.registerTitle")}</h1>
-      <p className="mb-6 mt-1 text-center muted">{t("auth.registerSubtitle")}</p>
-      {!isSupabaseConfigured() && <p className="alert-warn mb-4">{t("common.notConfigured")}</p>}
+      <h1 className="text-center text-2xl font-bold text-white">
+        {t("auth.registerTitle")}
+      </h1>
+
+      <p className="mb-6 mt-1 text-center muted">
+        {t("auth.registerSubtitle")}
+      </p>
+
+      {!isSupabaseConfigured() && (
+        <p className="alert-warn mb-4">
+          {t("common.notConfigured")}
+        </p>
+      )}
+
       <RegisterForm universities={universities} />
+
       <p className="mt-6 text-center text-sm text-slate-300">
-        {t("auth.haveAccount")} <Link href="/login" className="link">{t("auth.loginButton")}</Link>
+        {t("auth.haveAccount")}{" "}
+        <Link href="/login" className="link">
+          {t("auth.loginButton")}
+        </Link>
       </p>
     </div>
   );
