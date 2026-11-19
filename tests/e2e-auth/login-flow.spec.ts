@@ -82,6 +82,23 @@ test("reports query failure is visible inside the rendered app shell", async ({ 
   await expect(page.getByRole("alert").filter({ hasText: "Something went wrong" })).toBeVisible();
 });
 
+test("Content-Security-Policy is sent and blocks nothing the app needs", async ({ page }) => {
+  const violations: string[] = [];
+  page.on("console", (m) => {
+    if (/Content Security Policy|Refused to (load|execute|connect|apply|frame)/i.test(m.text())) violations.push(m.text());
+  });
+  await login(page, "ok");
+  await expect(page).toHaveURL(/\/reports$/);
+  const csp = (await page.request.get("/login")).headers()["content-security-policy"] ?? "";
+  expect(csp).toContain("default-src 'self'");
+  expect(csp).toContain("frame-ancestors 'none'");
+  for (const path of ["/reports", "/reports/new?type=lost", "/my-reports", "/map", "/matches", "/messages", "/notifications", "/profile", "/settings", "/requests", "/"]) {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle").catch(() => undefined);
+  }
+  expect(violations).toEqual([]);
+});
+
 test("wrong password and unconfirmed email show clear messages", async ({ page }) => {
   await login(page, "ok", "wrong-password1");
   await expect(page.getByText("Incorrect email or password.")).toBeVisible();

@@ -146,6 +146,8 @@ const en = {
       termsRequired: "You must accept the terms.",
       rateLimited: "Too many attempts. Please wait a moment and try again.",
       alreadyRegistered: "An account with this email already exists.",
+      universityUnavailable: "The selected university is not available for registration. Please reload the page and choose your university again.",
+      emailDeliveryFailed: "We couldn't send the confirmation email to this address. Please try again later or contact the platform administrator.",
     },
   },
   reportType: { lost: "Lost", found: "Found" },

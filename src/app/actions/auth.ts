@@ -88,11 +88,18 @@ export async function register(_: ActionResult | null, fd: FormData): Promise<Ac
     if (error.status === 429) return failKey("auth.errors.rateLimited");
     if (error.code === "user_already_exists" || /registered|exists/i.test(error.message)) return failKey("auth.errors.alreadyRegistered");
     if (error.code === "weak_password" || /password/i.test(error.message)) return failKey("auth.errors.weakPassword");
-    // handle_new_user() raises "signup:university"; GoTrue surfaces it as a
-    // generic "Database error saving new user".
-    if (/university/i.test(error.message) || error.code === "unexpected_failure") {
-      console.error("[auth] signUp rejected by database trigger", { status: error.status, code: error.code });
-      return failKey("auth.errors.universityRequired");
+    // The confirmation email could not be sent (e.g. Supabase's built-in mailer
+    // only delivers to project members until a custom SMTP provider is set).
+    if (error.code === "email_address_not_authorized" || /sending (confirmation|magic link) email|email address not authorized/i.test(error.message)) {
+      console.error("[auth] signUp confirmation email not sent", { status: error.status, code: error.code });
+      return failKey("auth.errors.emailDeliveryFailed");
+    }
+    // handle_new_user() raises "signup:university" for a missing/inactive
+    // university; GoTrue hides it behind a generic 500 "Database error saving
+    // new user" (sometimes without an error code).
+    if (/university|database error saving new user/i.test(error.message) || error.code === "unexpected_failure") {
+      console.error("[auth] signUp rejected by database trigger", { status: error.status, code: error.code, message: error.message });
+      return failKey("auth.errors.universityUnavailable");
     }
     console.error("[auth] signUp failed", { status: error.status, code: error.code, message: error.message });
     return failKey(isServiceError(error.status) ? "auth.errors.serviceUnavailable" : "common.genericError");
