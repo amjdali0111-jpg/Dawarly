@@ -15,10 +15,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const supabase = await getServerSupabase();
   const staff = isSecurityStaff(session);
-  const [categories, { reports, count, page }] = await Promise.all([
+  const [categories, { reports, count, page, error: searchError }] = await Promise.all([
     getCategories(supabase),
     searchReports(supabase, session.university.id, sp, { staff }),
   ]);
+  if (searchError) console.error("[ReportsPage] reports query failed", { code: searchError.code, message: searchError.message });
   const covers = await coverImages(supabase, reports.map((r) => r.id));
   const catMap = new Map(categories.map((c) => [c.id, c]));
   const uniName = locale === "ar" ? session.university.name_ar : session.university.name_en;
@@ -88,7 +89,9 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         </div>
       </form>
 
-      {reports.length === 0 ? (
+      {searchError ? (
+        <p className="alert-error" role="alert">{t("common.genericError")}</p>
+      ) : reports.length === 0 ? (
         <p className="card text-center text-slate-400">{t("reports.noResults")}</p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">

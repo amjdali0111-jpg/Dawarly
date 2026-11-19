@@ -24,7 +24,8 @@ async function getPublicStats(): Promise<{ universities: number; reports: number
 export default async function LandingPage({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
   const { t } = await getT();
   const { deleted } = await searchParams;
-  const [session, stats] = await Promise.all([getSession(), getPublicStats()]);
+  // The public page must render even if the session cannot be loaded.
+  const [session, stats] = await Promise.all([getSession().catch(() => null), getPublicStats()]);
   const startHref = (type: "lost" | "found") => `/reports/new?type=${type}`;
 
   return (

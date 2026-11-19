@@ -14,11 +14,20 @@ export async function GET(request: NextRequest) {
   const supabase = await getServerSupabase();
 
   let ok = false;
+  let failure: { status?: number; code?: string } | null = null;
   if (tokenHash && type) {
-    ok = !(await supabase.auth.verifyOtp({ type, token_hash: tokenHash })).error;
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
+    ok = !error;
+    if (error) failure = { status: error.status, code: error.code };
   } else if (code) {
-    ok = !(await supabase.auth.exchangeCodeForSession(code)).error;
+    // PKCE: only works in the browser that started sign-up (code verifier cookie).
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    ok = !error;
+    if (error) failure = { status: error.status, code: error.code };
+  } else {
+    failure = { code: "missing_token" };
   }
+  if (failure) console.warn("[auth/confirm] verification failed", { flow: tokenHash ? "token_hash" : code ? "pkce" : "none", type, ...failure });
   const dest = request.nextUrl.clone();
   dest.search = "";
   if (ok) {

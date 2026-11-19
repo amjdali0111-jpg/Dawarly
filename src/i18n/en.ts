@@ -127,7 +127,15 @@ const en = {
     verified: "Your email is confirmed. Welcome!",
     linkInvalid: "This link is invalid or has expired. Please request a new one.",
     noUniversities: "No universities are available yet. Please contact the platform administrator.",
+    accountIssue: {
+      title: "We couldn't open your account",
+      profile_missing: "You are signed in, but your Dawarly profile was not found. This happens when an account is created outside the registration form. Please contact your university administrator.",
+      profile_deleted: "This account has been deleted and can no longer be used.",
+      university_unavailable: "Your university is not currently active on Dawarly. Please contact your university administrator.",
+      hint: "You can sign out and use a different account.",
+    },
     errors: {
+      serviceUnavailable: "The service is temporarily unavailable. Please try again in a moment.",
       invalidCredentials: "Incorrect email or password.",
       emailNotConfirmed: "Please confirm your email before logging in.",
       passwordMismatch: "Passwords do not match.",

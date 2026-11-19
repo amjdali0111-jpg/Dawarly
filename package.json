@@ -13,6 +13,7 @@
     "test:unit": "vitest run tests/unit",
     "test:db": "bash scripts/test-db.sh && vitest run tests/db",
     "test:e2e": "playwright test",
+    "test:e2e:auth": "node scripts/e2e-auth.mjs",
     "bootstrap:admin": "node --experimental-strip-types scripts/bootstrap-admin.ts",
     "icons": "node scripts/generate-icons.mjs"
   },

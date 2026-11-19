@@ -29,12 +29,12 @@ export default async function RegisterPage() {
         .order("name_en");
 
       if (error) {
-        console.error("[RegisterPage] Universities query failed:", error);
+        // Typically 42501 when the anon role lacks EXECUTE on the RLS helpers
+        // (see migration 20261030000008_allow_anon_university_listing.sql).
+        console.error("[RegisterPage] Universities query failed:", { code: error.code, message: error.message });
       } else {
         universities = data ?? [];
-        console.log(
-          `[RegisterPage] Universities loaded: ${universities.length}`
-        );
+        if (universities.length === 0) console.warn("[RegisterPage] No active universities found");
       }
     } catch (error) {
       console.error("[RegisterPage] Unexpected error:", error);

@@ -14,10 +14,13 @@ import { Avatar } from "./Avatar";
 export async function AppShell({ session, children }: { session: SessionContext; children: React.ReactNode }) {
   const { t, locale } = await getT();
   const supabase = await getServerSupabase();
-  const [{ count: unread }, { data: parts }] = await Promise.all([
+  // Badge counts are optional: on failure the shell still renders (counts = 0).
+  const [{ count: unread, error: notifError }, { data: parts, error: partsError }] = await Promise.all([
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", session.userId).is("read_at", null),
     supabase.from("conversation_participants").select("conversation_id, last_read_at, conversations(last_message_at)").eq("user_id", session.userId),
   ]);
+  if (notifError) console.warn("[AppShell] unread notifications query failed", { code: notifError.code, message: notifError.message });
+  if (partsError) console.warn("[AppShell] conversations query failed", { code: partsError.code, message: partsError.message });
   const unreadChats = (parts ?? []).filter((p) => {
     const conv = p.conversations as unknown as { last_message_at: string } | null;
     return conv && (!p.last_read_at || conv.last_message_at > p.last_read_at);
